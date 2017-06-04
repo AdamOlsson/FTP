@@ -13,10 +13,11 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 
-int main(int argcount, char* argv[])
+int main(int argc, char* argv[])
 {
-    int sockfd, portnumber, newsockfd;
+    int sockfd, portnumber, newsockfd, n;
     struct sockaddr_in serv_address, cli_address;
+    char buffer[256];
 
     if(argcount < 2)
     {
@@ -40,7 +41,7 @@ int main(int argcount, char* argv[])
 
     portnumber = atoi(argv[1]); //Convert from string to int
     serv_address.sin_family = AF_INET;
-    serv_address.sin_port = htons(portnumber); //Convert portnumber to network byte order
+    serv_address.sin_port = htons(portnumber); //Convert portnumber to network byte order, from little endian to big endian
     serv_address.sin_addr.s_addr = INADDR_ANY; // IP of host. This will always be IP of machine but this value is just symbolic
 
     if(bind(sockfd, (struct sockaddr *)&serv_address, sizeof(serv_address)) < 0)
@@ -52,5 +53,22 @@ int main(int argcount, char* argv[])
 
     socklen_t clilen = sizeof(cli_address);
     newsockfd = accept(sockfd, (struct sockaddr *) &cli_address, &clilen); // Halt until someone connects
+    if(newsockfd < 0)
+    {
+        perror("Error on accept"); // Ska vara konsekvent med error men vet inte vilket jag ska använda
+    }
 
+    bzero(buffer, 256); //sizeof(buffer)? //initialize the buffer
+
+    n = read(newsockfd, buffer, 255); // why 255 and not 256? pga av att den börjar på samma minnesadress som pointern
+                                      // Read will block until client has executed write()
+
+    if(n < 0)
+    {
+        perror("Error, writing to socket")
+    }
+
+    n = write(newsockfd, "I got your message", 18);
+
+    return 0;
 }
