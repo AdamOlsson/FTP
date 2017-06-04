@@ -13,6 +13,12 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 
+void error(const char* msg)
+{
+    perror(msg);
+    exit(0);
+}
+
 int main(int argc, char* argv[])
 {
     int sockfd, portnumber, newsockfd, n;
@@ -21,8 +27,7 @@ int main(int argc, char* argv[])
 
     if(argcount < 2)
     {
-        fprintf(stderr, "Error, no port provided");
-        exit(1); //could make user enter a new port
+        error( "Error, no port provided");
     }
 
     /*
@@ -33,8 +38,7 @@ int main(int argc, char* argv[])
     sockfd = socket(AF_INET, SOCK_STREAM, 0); //sockfd = Socket File Describtor
     if(sockfd < 0) // if no socket created
     {
-        fprintf(stderr, "Socket not created");
-        exit(1);
+        error("Socket not created");
     }
 
     bzero((char *) &serv_address, sizeof(serv_address));
@@ -46,16 +50,16 @@ int main(int argc, char* argv[])
 
     if(bind(sockfd, (struct sockaddr *)&serv_address, sizeof(serv_address)) < 0)
     {
-        fprintf(stderr, "Error, could not bind socket");
-        exit(1);
+        error("Error, could not bind socket");
     }
+
     listen(sockfd, 5);
 
     socklen_t clilen = sizeof(cli_address);
     newsockfd = accept(sockfd, (struct sockaddr *) &cli_address, &clilen); // Halt until someone connects
     if(newsockfd < 0)
     {
-        perror("Error on accept"); // Ska vara konsekvent med error men vet inte vilket jag ska använda
+       error("Error on accept"); // Ska vara konsekvent med error men vet inte vilket jag ska använda
     }
 
     bzero(buffer, 256); //sizeof(buffer)? //initialize the buffer
@@ -65,7 +69,7 @@ int main(int argc, char* argv[])
 
     if(n < 0)
     {
-        perror("Error, writing to socket")
+        error("Error, writing to socket")
     }
 
     n = write(newsockfd, "I got your message", 18);
