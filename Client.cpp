@@ -53,8 +53,10 @@ int main(int argc, char* argv[])
     {
         error("Error connecting");
     }
+
     printf("Connected. \n");
     printf("Please enter message: \n");
+    
     memset(buffer, 0, 256);
     fgets(buffer, 255, stdin);
 
